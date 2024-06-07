@@ -1,60 +1,52 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <vector>
-#include "Engine.h"
 
 using namespace std;
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-Engine::mesh globalMesh;
-Engine::mat4x4 globalMat;
-
 int main(int argc, char** argv) {
-    Engine::initialize(SCREEN_WIDTH, SCREEN_HEIGHT, globalMesh, globalMat);
-
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("error");
-        return -1;
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        printf("SDL_Init Error: %s\n", SDL_GetError());
+        return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("SDL Cool", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer) {
-        printf("error");
-        return -1;
+    // Create a window
+    SDL_Window *win = SDL_CreateWindow("Engine", 100, 100, 640, 480, SDL_WINDOW_SHOWN);
+    if (win == NULL) {
+        printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
     }
 
-    Uint64 NOW = SDL_GetPerformanceCounter();
-    Uint64 LAST = 0;
-    float deltaTime = 0.0f;
+    // Create a renderer
+    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (ren == NULL) {
+        SDL_DestroyWindow(win);
+        printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
 
-    bool running = true;
-    while (running) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                running = false;
-                break;
-            }
-        }
+    // Set the renderer color (blue)
+    SDL_SetRenderDrawColor(ren, 0, 0, 255, 255);
 
-        LAST = NOW;
-        NOW = SDL_GetPerformanceCounter();
-        float deltaTime = (float)((NOW - LAST) / (float)SDL_GetPerformanceFrequency());
+    // Clear the window
+    SDL_RenderClear(ren);
 
-        SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        Engine::transform(globalMesh, globalMat, SCREEN_WIDTH, SCREEN_HEIGHT, *renderer, deltaTime);
-        SDL_RenderPresent(renderer);
-    }   
+    // Show the window
+    SDL_RenderPresent(ren);
 
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    // Wait for 5 seconds
+    SDL_Delay(5000);
+
+    // Cleanup
+    SDL_DestroyRenderer(ren);
+    SDL_DestroyWindow(win);
     SDL_Quit();
-    return 0;
 
-    
-
+    return 0;   
 }
