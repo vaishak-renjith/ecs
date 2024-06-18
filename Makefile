@@ -1,22 +1,35 @@
-OS = WINDOWS
+# Makefile for SDL2 program on Windows using PowerShell
 
-ifeq ($(OS), WINDOWS))
-	CXX = g++
-	COMPILER_FLAGS = -w -Iext/ -Iext/GIFLib/ -Iinclude/ --std=c++17 -g3 -static-libstdc++
-	LINKER_FLAGS = -Lext/SDL2 -Lext/GIFLib -lSDL2 -lSDL2main -lSDL2_image -lgiflib
-	CPP_FILES = src/Main.cpp include//*.cpp
-	OUTPUT_NAME = bin/output.exe
-else
-	CXX = clang++
-	COMPILER_FLAGS = -w -Iinclude/ --std=c++17 -g3
-	LINKER_FLAGS = -lSDL2main -lSDL2 -lSDL2_image -lgif
-	CPP_FILES = src/Main.cpp include/*.cpp
-	OUTPUT_NAME = bin/output
-endif
+# Compiler
+CC = gcc
+# Compiler flags
+CFLAGS = -Wall -Wextra -pedantic
 
-all:
-	$(CXX) $(COMPILER_FLAGS) $(CPP_FILES) $(LINKER_FLAGS) -o $(OUTPUT_NAME)
+# SDL paths (adjust these to match your installation paths)
+SDL_INCLUDE = -I"C:\Dev\c++\sdl2\test1\include"
+SDL_LIB = -L"C:\Dev\c++\sdl2\test1\lib" -lSDL2 -lSDL2main
 
+# Source files
+SRC = $(wildcard src/*.c)
+OBJ = $(SRC:.c=.o)
+
+# Output executable
+TARGET = main.exe
+
+# Default target
+all: $(TARGET)
+
+# Compilation rule
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) $(SDL_INCLUDE) -o $(TARGET) $(OBJ) $(SDL_LIB)
+
+# Object file rule
+%.o: %.c
+	$(CC) $(CFLAGS) $(SDL_INCLUDE) -c $< -o $@
+
+# Clean rule
 clean:
-	rm -rf bin/output*
-	rm -rf ext/
+	del $(TARGET) $(OBJ)
+
+# Declare 'clean' as a phony target
+.PHONY: all clean
